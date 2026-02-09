@@ -41,6 +41,7 @@ Default behavior:
 - `--issue-prefix <prefix>`: set issue ID prefix used in commit examples
 - `--models codex,claude,gemini`: choose models to generate wrappers for
 - `--absorb-existing`: when target file already exists, merge existing+template via LLM
+- `--absorb-mode merge|hybrid`: absorb strategy (`merge` default, `hybrid` for sidecar legacy docs)
 - `--llm-provider codex|claude|gemini`: select provider for absorb mode (default: `codex`)
 - `--llm-command "<command>"`: custom merge command (reads prompt from stdin, writes merged file content to stdout)
 - `--without-notion-mcp`: skip Notion MCP docs and sample server contract
@@ -54,6 +55,23 @@ If the target project already contains `.agent`, `.claude`, `.codex`, or similar
 ```bash
 bash scripts/bootstrap-workflow.sh --absorb-existing --llm-provider codex
 ```
+
+Recommended hybrid mode for large pre-existing guides:
+
+```bash
+bash scripts/bootstrap-workflow.sh \
+  --absorb-existing \
+  --absorb-mode hybrid \
+  --llm-provider codex
+```
+
+Hybrid behavior for existing `AGENTS.md` and `CLAUDE.md`:
+
+- Standardized template is written to the original filename.
+- Legacy content is preserved in sidecar files:
+  - `docs/project/AGENTS.legacy.md`
+  - `docs/project/CLAUDE.legacy.md`
+- The standardized file includes a reference section pointing to the legacy sidecar.
 
 With a custom LLM command:
 

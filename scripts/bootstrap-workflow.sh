@@ -12,6 +12,7 @@ Usage:
     [--issue-prefix <prefix>] \
     [--models codex,claude,gemini] \
     [--absorb-existing] \
+    [--absorb-mode merge|hybrid] \
     [--llm-provider codex|claude|gemini] \
     [--llm-command <command>] \
     [--without-notion-mcp] \
@@ -23,6 +24,7 @@ Options:
   --issue-prefix      Issue prefix used in commit examples (default: Lt)
   --models            Comma-separated model list (default: codex,claude,gemini)
   --absorb-existing   Use LLM to merge existing files with generated templates (instead of skip)
+  --absorb-mode       Absorb strategy: merge (in-place) or hybrid (legacy sidecar + reference)
   --llm-provider      LLM provider for absorb mode (default: codex)
   --llm-command       Custom shell command for absorb mode (reads prompt from stdin, writes merged content to stdout)
   --without-notion-mcp Skip Notion MCP docs and example contract (enabled by default)
@@ -42,8 +44,10 @@ PROJECT_NAME=""
 ISSUE_PREFIX="Lt"
 MODELS_RAW="codex,claude,gemini"
 ABSORB_EXISTING=0
+ABSORB_MODE="merge"
 LLM_PROVIDER="codex"
 LLM_COMMAND=""
+ABSORB_MODE_SET=0
 LLM_PROVIDER_SET=0
 LLM_COMMAND_SET=0
 WITH_NOTION_MCP=1
@@ -70,6 +74,11 @@ while [[ $# -gt 0 ]]; do
     --absorb-existing)
       ABSORB_EXISTING=1
       shift
+      ;;
+    --absorb-mode)
+      ABSORB_MODE="${2:-}"
+      ABSORB_MODE_SET=1
+      shift 2
       ;;
     --llm-provider)
       LLM_PROVIDER="${2:-}"
@@ -132,6 +141,10 @@ if [[ -z "$PROJECT_NAME" ]]; then
 fi
 
 if [[ $ABSORB_EXISTING -eq 0 ]]; then
+  if [[ $ABSORB_MODE_SET -eq 1 ]]; then
+    echo "Error: --absorb-mode is only valid with --absorb-existing" >&2
+    exit 1
+  fi
   if [[ $LLM_PROVIDER_SET -eq 1 ]]; then
     echo "Error: --llm-provider is only valid with --absorb-existing" >&2
     exit 1
@@ -143,6 +156,15 @@ if [[ $ABSORB_EXISTING -eq 0 ]]; then
 fi
 
 if [[ $ABSORB_EXISTING -eq 1 ]]; then
+  case "$ABSORB_MODE" in
+    merge|hybrid)
+      ;;
+    *)
+      echo "Error: unsupported --absorb-mode '$ABSORB_MODE'. Supported: merge, hybrid" >&2
+      exit 1
+      ;;
+  esac
+
   if [[ -z "$LLM_COMMAND" ]]; then
     case "$LLM_PROVIDER" in
       codex|claude|gemini)
@@ -329,6 +351,36 @@ normalize_llm_output() {
   fi
 }
 
+hybrid_legacy_rel_for() {
+  local dest_rel="$1"
+  case "$dest_rel" in
+    AGENTS.md) printf '%s' 'docs/project/AGENTS.legacy.md' ;;
+    CLAUDE.md) printf '%s' 'docs/project/CLAUDE.legacy.md' ;;
+    *) printf '%s' '' ;;
+  esac
+}
+
+append_hybrid_reference_section() {
+  local dest_rel="$1"
+  local candidate_file="$2"
+  local legacy_rel="$3"
+  local output_file="$4"
+
+  cp "$candidate_file" "$output_file"
+  cat >> "$output_file" <<EOF
+
+## Project Legacy Guidance
+
+This file was standardized by the bootstrap workflow.
+Project-specific legacy guidance from the pre-bootstrap version is preserved at \`$legacy_rel\`.
+
+Usage rules:
+- Follow this file for required workflow/process constraints.
+- Use the legacy file for project-specific implementation context not covered here.
+- When instructions conflict, prioritize required workflow guardrails in this file.
+EOF
+}
+
 write_or_merge_file() {
   local dest_rel="$1"
   local candidate_file="$2"
@@ -336,6 +388,25 @@ write_or_merge_file() {
 
   if [[ -f "$dest" ]]; then
     if [[ $ABSORB_EXISTING -eq 1 ]]; then
+      if [[ "$ABSORB_MODE" == "hybrid" ]]; then
+        local legacy_rel hybrid_output_file legacy_abs
+        legacy_rel="$(hybrid_legacy_rel_for "$dest_rel")"
+        if [[ -n "$legacy_rel" ]]; then
+          legacy_abs="$TARGET/$legacy_rel"
+          mkdir -p "$(dirname "$legacy_abs")"
+          cp "$dest" "$legacy_abs"
+
+          hybrid_output_file="$(tmp_file)"
+          append_hybrid_reference_section "$dest_rel" "$candidate_file" "$legacy_rel" "$hybrid_output_file"
+          mkdir -p "$(dirname "$dest")"
+          cp "$hybrid_output_file" "$dest"
+
+          echo "hybrid $dest_rel (template + reference to $legacy_rel)"
+          echo "write $legacy_rel (legacy snapshot)"
+          return
+        fi
+      fi
+
       local prompt_file raw_output_file normalized_output_file
       prompt_file="$(tmp_file)"
       raw_output_file="$(tmp_file)"
@@ -555,6 +626,7 @@ echo
 printf 'Bootstrap complete for %s at %s\n' "$PROJECT_NAME" "$TARGET"
 printf 'Models installed: %s\n' "${MODELS[*]}"
 if [[ $ABSORB_EXISTING -eq 1 ]]; then
+  printf 'Absorb mode: %s\n' "$ABSORB_MODE"
   if [[ -n "$LLM_COMMAND" ]]; then
     echo "Existing file absorb mode: enabled (custom command)"
   else

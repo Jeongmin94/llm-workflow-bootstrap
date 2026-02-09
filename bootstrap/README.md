@@ -47,6 +47,7 @@ Default behavior:
 - `--issue-prefix <prefix>`: set issue ID prefix used in commit examples
 - `--models codex,claude,gemini`: choose models to generate wrappers for
 - `--absorb-existing`: when target file already exists, merge existing+template via LLM
+- `--absorb-mode merge|hybrid`: absorb strategy (`merge` default, `hybrid` for sidecar legacy docs)
 - `--llm-provider codex|claude|gemini`: select provider for absorb mode (default: `codex`)
 - `--llm-command "<command>"`: custom merge command (reads prompt from stdin, writes merged file content to stdout)
 - `--without-notion-mcp`: skip Notion MCP docs and sample server contract
@@ -59,6 +60,12 @@ If the target project already has agent docs/skills, use absorb mode to merge cu
 
 ```bash
 bash scripts/bootstrap-workflow.sh --absorb-existing --llm-provider codex
+```
+
+Recommended hybrid mode for large existing guides:
+
+```bash
+bash scripts/bootstrap-workflow.sh --absorb-existing --absorb-mode hybrid --llm-provider codex
 ```
 
 ## Generated Layout (High Level)
@@ -81,6 +88,7 @@ docs/llm-stack.md
 ## Notes
 
 - Existing files are skipped by default unless `--force` is provided.
-- With `--absorb-existing`, existing files are merged with generated templates via LLM.
+- With `--absorb-existing --absorb-mode merge`, existing files are merged with generated templates via LLM.
+- With `--absorb-existing --absorb-mode hybrid`, `AGENTS.md`/`CLAUDE.md` are standardized and their previous content is preserved under `docs/project/*.legacy.md`.
 - The Notion MCP template is client-agnostic; fill in command/env based on your runtime.
 - Model wrappers intentionally stay minimal and point to shared contracts.
