@@ -128,7 +128,20 @@ git status
 
 Final state must be clean and synchronized with remote.
 
-## 8. Report
+## 8. Post-Apply Review + Human Checklist (Required)
+
+Run the shared post-apply flow:
+
+- `.agent-stack/skills/post-apply-checklist.md`
+- `.agent-stack/skills/pr-review.md`
+
+Expected outputs:
+
+- review findings summary for `main...HEAD`
+- Notion checklist URL for human verification
+- beads note with checklist link/status
+
+## 9. Report
 
 Include:
 
@@ -137,6 +150,8 @@ Include:
 - branch name
 - commit list
 - quality gate results
+- review findings summary
+- Notion checklist URL (or blocked reason)
 - final issue status
 
 ## Guardrails
@@ -146,3 +161,4 @@ Include:
 - Never commit directly to `main`
 - Never skip push at session end
 - If push fails, resolve and retry
+- Do not skip post-apply checklist publication when Notion MCP is configured

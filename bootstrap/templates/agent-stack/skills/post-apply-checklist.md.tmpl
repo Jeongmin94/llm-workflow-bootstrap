@@ -1,0 +1,70 @@
+# Post-Apply Review + Human Checklist (Common)
+
+Shared behavior for model-specific `post-apply-checklist` wrappers.
+
+## Goal
+
+After implementation and push, run a review pass and publish a human verification checklist in Notion.
+
+## Required Inputs
+
+- issue ID and title
+- branch under review
+- review range (`main...HEAD`)
+- Notion destination (database/page) when workspace policy requires explicit destination
+
+## Required Behavior
+
+1. Confirm branch is pushed and working tree is clean.
+2. Run review on `git diff main...HEAD`.
+3. Focus review on correctness, regressions, missing tests, and architecture risks.
+4. Summarize findings with severity (`P1/P2/P3`) and exact file/line references.
+5. Create or update a Notion checklist page via MCP for human verification.
+6. Checklist must include:
+   - issue context (ID, title, branch, commit range)
+   - quality gate results (tests/lint/build)
+   - review findings checklist (status + owner)
+   - manual validation checklist (critical flows/regression checks)
+   - final sign-off fields (reviewer, decision, date)
+7. Record Notion page URL in beads notes:
+   - `bd update <id> --notes="<notion-checklist-url>" --json`
+
+## Human Checklist Template
+
+Use a human-facing checklist with this minimum structure:
+
+```markdown
+# <Issue ID> - Post-Apply Verification
+
+## Context
+- Issue: <id/title>
+- Branch: <branch>
+- Diff: `main...HEAD`
+- Reviewer: <name>
+
+## Automated Checks
+- [ ] Tests passed
+- [ ] Lint passed
+- [ ] Build/compile passed
+
+## Review Findings
+- [ ] P1 findings resolved
+- [ ] P2 findings resolved or accepted with rationale
+- [ ] P3 findings triaged
+
+## Manual Validation
+- [ ] Core user flow A checked
+- [ ] Core user flow B checked
+- [ ] Regression hotspots checked
+- [ ] Rollback plan confirmed
+
+## Sign-off
+- [ ] Approve for merge
+- [ ] Follow-up issues created for deferred work
+```
+
+## Guardrails
+
+- Do not modify source files in checklist mode.
+- If Notion MCP is unavailable, produce the same checklist in Markdown and mark checklist publication as blocked.
+- Do not merge automatically.

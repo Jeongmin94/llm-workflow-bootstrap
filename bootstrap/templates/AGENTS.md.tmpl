@@ -7,6 +7,7 @@ This repository uses **beads** (issue tracking) and **OpenSpec** (spec workflow)
 - Shared apply workflow: `docs/workflows/apply-common.md`
 - Worktree and multi-agent topology: `docs/multi-agent-setup.md`
 - Multi-model stack map: `docs/llm-stack.md`
+- Post-apply checklist contract: `.agent-stack/skills/post-apply-checklist.md`
 
 ## Required Stack
 
@@ -17,7 +18,7 @@ This workflow assumes both tools are available in the target repository:
 
 OpenSpec artifacts define what to build; beads tracks who is doing it and the task state.
 
-When `/codex-apply`, `/claude-apply`, or `/gemini-apply` is used, execution MUST follow `docs/workflows/apply-common.md`.
+When `/codex-apply`, `/claude-apply`, or `/gemini-apply` is used, execution MUST follow `docs/workflows/apply-common.md`, including post-apply review + checklist publication.
 
 ## Quick Reference
 

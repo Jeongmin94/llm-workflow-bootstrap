@@ -516,6 +516,7 @@ render_template "docs/multi-agent-setup.md.tmpl" "docs/multi-agent-setup.md"
 render_template "docs/llm-stack.md.tmpl" "docs/llm-stack.md"
 render_template "agent-stack/skills/apply-common.md.tmpl" ".agent-stack/skills/apply-common.md"
 render_template "agent-stack/skills/pr-review.md.tmpl" ".agent-stack/skills/pr-review.md"
+render_template "agent-stack/skills/post-apply-checklist.md.tmpl" ".agent-stack/skills/post-apply-checklist.md"
 
 if [[ $WITH_NOTION_MCP -eq 1 ]]; then
   render_template "docs/mcp/notion.md.tmpl" "docs/mcp/notion.md"
@@ -607,6 +608,24 @@ Findings must be recorded in beads issues.
 "
   write_text_file "$review_skill_path" "$review_skill_content"
 
+  checklist_skill_path="$skill_root/post-apply-checklist/SKILL.md"
+  checklist_skill_content="---
+name: post-apply-checklist
+description: Run post-apply review and publish a human verification checklist in Notion MCP with $model_title.
+---
+
+# Post-Apply Checklist ($model_title)
+
+Follow these canonical sources:
+
+- .agent-stack/skills/post-apply-checklist.md
+- .agent-stack/skills/pr-review.md
+- docs/workflows/apply-common.md
+
+Run this after implementation push to prepare human verification and sign-off.
+"
+  write_text_file "$checklist_skill_path" "$checklist_skill_content"
+
   profile_path=".agent-stack/profiles/$model.md"
   profile_content="# $model_title Profile
 
@@ -615,6 +634,9 @@ Apply skill:
 
 Review skill:
 - $skill_root/pr-review/SKILL.md
+
+Post-apply checklist skill:
+- $skill_root/post-apply-checklist/SKILL.md
 
 Runtime requirements:
 $runtime_note
