@@ -22,8 +22,7 @@ jobs:
             --target "$TARGET_DIR" \
             --project-name "CI Smoke" \
             --issue-prefix CI \
-            --models codex,claude,gemini \
-            --with-notion-mcp
+            --models codex,claude,gemini
 
           test -f "$TARGET_DIR/AGENTS.md"
           test -f "$TARGET_DIR/docs/workflows/apply-common.md"

@@ -6,7 +6,7 @@ Project-agnostic bootstrap kit for:
 - OpenSpec artifact workflow
 - multi-agent git worktree setup
 - multi-model skill wrappers (`codex`, `claude`, `gemini`)
-- optional Notion MCP contract templates
+- Notion MCP contract templates (default enabled)
 
 ## Why
 
@@ -30,13 +30,25 @@ This script does not install or initialize OpenSpec/beads. It bootstraps docs, c
 
 ```bash
 # from this repository
-scripts/bootstrap-workflow.sh \
-  --target /path/to/your-repo \
-  --project-name "Your Project" \
-  --issue-prefix YP \
-  --models codex,claude,gemini \
-  --with-notion-mcp
+scripts/bootstrap-workflow.sh
 ```
+
+Default behavior:
+
+- target path: `../../` from current working directory
+- project name: basename of target path
+- models: `codex,claude,gemini`
+- Notion MCP templates: enabled
+
+## Options
+
+- `--target <path>`: override target repository path
+- `--project-name <name>`: override project display name
+- `--issue-prefix <prefix>`: set issue ID prefix used in commit examples
+- `--models codex,claude,gemini`: choose models to generate wrappers for
+- `--without-notion-mcp`: skip Notion MCP docs and sample server contract
+- `--force`: overwrite existing generated files
+- `-h`, `--help`: show help
 
 ## Generated Layout (High Level)
 
@@ -52,7 +64,7 @@ docs/llm-stack.md
   profiles/
 .codex/skills/
 .claude/skills/
-.agent/skills/        # Gemini (Antigravity)
+.agent/skills/        # Gemini
 ```
 
 ## Notes
@@ -60,4 +72,3 @@ docs/llm-stack.md
 - Existing files are not overwritten unless `--force` is provided.
 - The Notion MCP template is client-agnostic; fill in command/env based on your runtime.
 - Model wrappers intentionally stay minimal and point to shared contracts.
-- `antigravity` is accepted as a model alias and mapped to `gemini` (`.agent/skills`).

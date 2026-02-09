@@ -9,8 +9,8 @@ Reusable bootstrap kit for setting up a multi-LLM agent workflow in any reposito
 - Thin model wrappers for:
   - Codex (`.codex/skills`)
   - Claude (`.claude/skills`)
-  - Gemini / Antigravity (`.agent/skills`)
-- Optional Notion MCP contract templates
+  - Gemini (`.agent/skills`)
+- Notion MCP contract templates (default enabled)
 
 ## Required Stack (Not Installed By This Script)
 
@@ -24,19 +24,25 @@ This repository does not install or initialize OpenSpec/beads. It only bootstrap
 ## Quick Start
 
 ```bash
-bash scripts/bootstrap-workflow.sh \
-  --target /absolute/path/to/target-repo \
-  --project-name "Target Project" \
-  --issue-prefix TP \
-  --models codex,claude,gemini \
-  --with-notion-mcp
+bash scripts/bootstrap-workflow.sh
 ```
 
-## Model Notes
+Default behavior:
 
-- Default models: `codex,claude,gemini`
-- `antigravity` is accepted as an alias of `gemini`
-- Wrappers stay thin and delegate to shared contracts to reduce drift
+- target path: `../../` from current working directory
+- project name: basename of target path
+- models: `codex,claude,gemini`
+- Notion MCP templates: enabled
+
+## Options
+
+- `--target <path>`: override target repository path
+- `--project-name <name>`: override project display name
+- `--issue-prefix <prefix>`: set issue ID prefix used in commit examples
+- `--models codex,claude,gemini`: choose models to generate wrappers for
+- `--without-notion-mcp`: skip Notion MCP docs and sample server contract
+- `--force`: overwrite existing generated files
+- `-h`, `--help`: show help
 
 ## Repository Layout
 
