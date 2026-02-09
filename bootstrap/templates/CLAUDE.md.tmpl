@@ -1,0 +1,32 @@
+# {{PROJECT_NAME}}
+
+Project-level conventions for AI agents.
+
+## Workflow
+
+- Planning/specs (required): OpenSpec
+- Execution tracking (required): beads
+- Canonical apply flow: `docs/workflows/apply-common.md`
+
+OpenSpec artifacts are the implementation source-of-truth, and beads issue status is required for session state transitions.
+
+## Coding Conventions
+
+- Keep comments concise and in English.
+- Keep edits scoped to the assigned issue.
+- Prefer minimal, composable changes over broad rewrites.
+- Add tests for behavior changes where feasible.
+
+## Required beads Rules
+
+- All `bd` commands should include `--json`.
+- Issue must be claimed before implementation:
+  - `bd update <id> --status in_progress --json`
+- Close or update notes before ending a session.
+- Commit messages must include issue IDs (`{{ISSUE_PREFIX}}-xxx`).
+
+## Multi-Agent Rules
+
+- Use one worktree per agent.
+- Branch naming: `agent/<agent-name>/<feature-slug>`.
+- Never commit directly to `main`.

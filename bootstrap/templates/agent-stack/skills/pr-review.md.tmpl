@@ -1,0 +1,31 @@
+# PR Review Skill Contract (Common)
+
+Shared behavior for model-specific `pr-review` wrappers.
+
+## Goal
+
+Run a repeatable review cycle on `main...HEAD` and produce actionable findings.
+This review layer is part of the OpenSpec + beads workflow: findings must be tracked in beads.
+
+## Required Behavior
+
+1. Identify the PR for the current branch (create if missing).
+2. Run review on `git diff main...HEAD`.
+3. Focus on correctness, regressions, missing tests, and architectural risks.
+4. Create or update beads issues for findings.
+5. Do not edit source files in review-only mode.
+
+## Finding Format
+
+Each finding should include:
+
+- concise title
+- severity (P1/P2/P3)
+- description of impact
+- exact file + line reference
+
+## Guardrails
+
+- Avoid duplicate issues for the same finding.
+- If no findings, report a clean review explicitly.
+- Do not merge automatically.

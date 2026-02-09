@@ -1,0 +1,57 @@
+# Agent Instructions
+
+This repository uses **beads** (issue tracking) and **OpenSpec** (spec workflow).
+
+## Canonical Docs
+
+- Shared apply workflow: `docs/workflows/apply-common.md`
+- Worktree and multi-agent topology: `docs/multi-agent-setup.md`
+- Multi-model stack map: `docs/llm-stack.md`
+
+## Required Stack
+
+This workflow assumes both tools are available in the target repository:
+
+- OpenSpec (spec lifecycle and implementation context)
+- beads (issue tracking and execution state)
+
+OpenSpec artifacts define what to build; beads tracks who is doing it and the task state.
+
+When `/codex-apply`, `/claude-apply`, or `/gemini-apply` is used, execution MUST follow `docs/workflows/apply-common.md`.
+
+## Quick Reference
+
+```bash
+bd doctor --json
+bd ready --json
+bd show <id> --json
+bd update <id> --status in_progress --json
+bd close <id> --json
+```
+
+## Coordination Rules
+
+- One agent = one issue.
+- Do not work on issues already claimed by another agent.
+- Use worktree isolation with branch naming: `agent/<name>/<feature>`.
+- Keep edits in scope for the assigned issue.
+- Leave progress notes with `bd update <id> --notes="..." --json`.
+- Link discovered follow-up work using `discovered-from` dependencies.
+
+## Commit Convention
+
+- Commit message MUST include the issue ID: `"description ({{ISSUE_PREFIX}}-xxx)"`.
+
+## Session Start
+
+1. `bd doctor --json`
+2. `bd ready --json`
+3. Select an unblocked issue
+4. `bd update <id> --status in_progress --json`
+
+## Session End
+
+1. Run quality gates for changed scope
+2. `bd close <id> --json` (or leave clear notes if incomplete)
+3. `bd sync --json`
+4. `git push`

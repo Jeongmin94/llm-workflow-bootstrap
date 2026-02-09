@@ -1,0 +1,148 @@
+# Apply Common Workflow (OpenSpec + beads)
+
+Shared source-of-truth for task implementation across models (`codex`, `claude`, `gemini`).
+
+## Stack Contract (Required)
+
+This workflow requires both systems:
+
+- OpenSpec for specs/tasks artifacts (what to implement)
+- beads for issue ownership/status tracking (who is implementing it and current state)
+
+Agents must not bypass either layer.
+
+## 0. Execution Permission Requirement
+
+Apply workflows perform direct implementation and require unrestricted project-level access (files, commands, network as needed).
+
+## 1. Resolve Target Task
+
+Accept one of these inputs:
+
+- `{{ISSUE_PREFIX}}-xxx` issue ID
+- OpenSpec change name
+- No argument (select from `bd ready --json`)
+
+If an issue title is OpenSpec-linked (for example `[opsx] <change-name>`), resolve and load that change before implementation.
+
+Commands:
+
+```bash
+bd ready --json
+bd show <id> --json
+openspec instructions apply --change "<change-name>" --json
+```
+
+Eligibility checks:
+
+- Not `in_progress` by another agent
+- Not blocked by unresolved dependencies
+
+## 2. Setup Git Environment
+
+### 2a. Determine agent identity
+
+```bash
+git worktree list
+git branch --show-current
+```
+
+### 2b. Ensure worktree isolation
+
+```bash
+MAIN_DIR="$(git rev-parse --show-toplevel)"
+WORKTREE_DIR="$(dirname "$MAIN_DIR")/{{PROJECT_SLUG}}-<agent-name>"
+git worktree add "$WORKTREE_DIR" -b "agent/<agent-name>/main" main
+```
+
+### 2c. Create/switch feature branch
+
+```bash
+git checkout -b "agent/<agent-name>/<feature-slug>"
+```
+
+### 2d. Claim task
+
+```bash
+bd update <id> --status in_progress --json
+```
+
+## 3. Gather OpenSpec + Code Context
+
+```bash
+bd show <id> --json
+openspec instructions apply --change "<change-name>" --json
+```
+
+Read proposal/design/specs/tasks before editing code when the issue maps to an OpenSpec change.
+
+## 4. Implement
+
+- Keep edits in scope
+- Follow project conventions from `AGENTS.md` and `CLAUDE.md`
+- Update `tasks.md` checkboxes when relevant (`- [ ]` -> `- [x]`)
+- Keep commits focused and include issue ID
+
+Commit format:
+
+```text
+description ({{ISSUE_PREFIX}}-xxx)
+```
+
+## 5. Quality Gates
+
+Run checks relevant to changed scope:
+
+- tests
+- lint
+- build/compile verification
+
+If checks cannot run, explicitly document why.
+
+## 6. Complete Task State
+
+If finished:
+
+```bash
+bd close <id> --json
+```
+
+If not finished:
+
+```bash
+bd update <id> --notes="<status/blocker>" --json
+```
+
+Sync metadata when needed:
+
+```bash
+bd sync --json
+```
+
+## 7. Push and Verify (Mandatory)
+
+```bash
+git push -u origin "agent/<agent-name>/<feature-slug>"
+git status
+```
+
+Final state must be clean and synchronized with remote.
+
+## 8. Report
+
+Include:
+
+- verification commands summary
+- issue ID + title
+- branch name
+- commit list
+- quality gate results
+- final issue status
+
+## Guardrails
+
+- One agent handles one issue at a time
+- Never work on another agent's claimed issue
+- Never commit directly to `main`
+- Never skip push at session end
+- If push fails, resolve and retry

@@ -1,0 +1,31 @@
+# Apply Skill Contract (Common)
+
+This is the shared behavior for all model-specific `*-apply` skills.
+
+## Input
+
+- `{{ISSUE_PREFIX}}-xxx` issue ID, OR
+- OpenSpec change name, OR
+- no argument (select from `bd ready --json`)
+
+## Mandatory Stack Usage
+
+- OpenSpec artifacts (`proposal/design/specs/tasks`) are the source-of-truth for implementation scope.
+- beads issue state (`bd update/close/sync --json`) is mandatory for ownership and execution tracking.
+- If an issue maps to a change (`[opsx]` convention or explicit change name), load OpenSpec context before editing code.
+
+## Required Behavior
+
+1. Resolve target issue/change.
+2. Follow `docs/workflows/apply-common.md` exactly.
+3. Claim issue before edits.
+4. Keep edits in scope.
+5. Run quality gates.
+6. Close issue (or leave notes) and push.
+
+## Guardrails
+
+- Never work on an issue claimed by another agent.
+- Never commit directly to `main`.
+- Commit message must include issue ID.
+- Stop and report if blocked.

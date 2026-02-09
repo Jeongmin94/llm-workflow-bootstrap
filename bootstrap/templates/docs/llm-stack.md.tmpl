@@ -1,0 +1,29 @@
+# LLM Stack Layout
+
+This repository uses a provider-agnostic structure:
+
+- Common workflow docs in `docs/`
+- Common skill logic in `.agent-stack/skills/`
+- Thin model wrappers under model-specific directories
+
+## Canonical Files
+
+- `docs/workflows/apply-common.md`
+- `docs/multi-agent-setup.md`
+- `.agent-stack/skills/apply-common.md`
+- `.agent-stack/skills/pr-review.md`
+- `.agent-stack/stack.json`
+
+## Model Wrapper Paths
+
+- Codex: `.codex/skills/*/SKILL.md`
+- Claude: `.claude/skills/*/SKILL.md`
+- Gemini (Antigravity): `.agent/skills/*/SKILL.md`
+
+Wrappers should remain minimal and delegate behavior to common docs/files.
+
+## Why This Layout
+
+- One source of truth for process changes
+- Minimal drift between models
+- Easy bootstrap for new repositories

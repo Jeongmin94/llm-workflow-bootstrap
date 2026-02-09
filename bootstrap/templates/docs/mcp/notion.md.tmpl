@@ -1,0 +1,45 @@
+# Notion MCP Setup
+
+Use this document as the canonical contract for connecting a Notion MCP server across different LLM clients.
+
+## Required Environment Variables
+
+```bash
+NOTION_API_KEY=<secret_notion_token>
+NOTION_API_VERSION=2022-06-28
+NOTION_DEFAULT_DATABASE_ID=<database-id>
+```
+
+## Server Contract (Client-Agnostic)
+
+```json
+{
+  "servers": {
+    "notion": {
+      "command": "<notion-mcp-server-command>",
+      "args": ["<optional-arg-1>", "<optional-arg-2>"],
+      "env": {
+        "NOTION_API_KEY": "${NOTION_API_KEY}",
+        "NOTION_API_VERSION": "${NOTION_API_VERSION}",
+        "NOTION_DEFAULT_DATABASE_ID": "${NOTION_DEFAULT_DATABASE_ID}"
+      }
+    }
+  }
+}
+```
+
+## Client Mapping
+
+- Codex: add the `notion` server entry to Codex MCP config.
+- Claude: add the same server entry in Claude MCP settings.
+- Antigravity: register the same contract in Antigravity MCP settings.
+
+Keep command/env values identical across clients to avoid behavior drift.
+
+## Validation Checklist
+
+- Token has required workspace access.
+- Database ID is correct.
+- MCP server process starts without auth errors.
+- A simple read query succeeds from each client runtime.
+

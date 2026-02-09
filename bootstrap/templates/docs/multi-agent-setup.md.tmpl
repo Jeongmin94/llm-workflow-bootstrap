@@ -1,0 +1,68 @@
+# Multi-Agent Setup Guide
+
+## Overview
+
+Run multiple LLM agents in parallel using git worktrees and beads coordination.
+
+- Task execution flow: `docs/workflows/apply-common.md`
+- One agent = one issue
+- OpenSpec defines implementation scope; beads tracks execution state
+
+## Worktree Setup
+
+Create dedicated worktrees per agent:
+
+```bash
+# Run from repo root
+git worktree add ../{{PROJECT_SLUG}}-agent-1 -b agent/agent-1/main
+git worktree add ../{{PROJECT_SLUG}}-agent-2 -b agent/agent-2/main
+```
+
+Directory topology:
+
+```text
+workspace/
+├── {{PROJECT_SLUG}}/                # Main repo
+├── {{PROJECT_SLUG}}-agent-1/        # Agent 1 worktree
+└── {{PROJECT_SLUG}}-agent-2/        # Agent 2 worktree
+```
+
+Branch naming:
+
+```text
+agent/<agent-name>/<feature-or-task>
+```
+
+## Per-Agent Execution
+
+Each agent follows `docs/workflows/apply-common.md`:
+
+1. pick ready issue
+2. claim issue
+3. implement
+4. run quality gates
+5. close + push + verify
+
+## Coordination Rules
+
+- Claim before coding: `bd update <id> --status in_progress --json`
+- Use `bd update <id> --notes="..." --json` for handoff context
+- Use `discovered-from` for follow-up issues found during implementation
+
+## Epic Decomposition
+
+```bash
+# Epic container
+bd create --title="<epic>" --type=epic --priority=1 --json
+
+# Tasks
+bd create --title="<task-a>" --type=task --priority=2 --json
+bd create --title="<task-b>" --type=task --priority=2 --json
+
+# parent-child (ownership)
+bd dep add <task-a> <epic> --type=parent-child --json
+bd dep add <task-b> <epic> --type=parent-child --json
+
+# blocks (ordering)
+bd dep add <task-b> <task-a> --type=blocks --json
+```
