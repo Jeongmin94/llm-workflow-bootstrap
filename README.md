@@ -24,13 +24,14 @@ This repository does not install or initialize OpenSpec/beads. It only bootstrap
 ## Quick Start
 
 ```bash
-bash scripts/bootstrap-workflow.sh
+cd scripts
+bash bootstrap-workflow.sh
 ```
 
 Default behavior:
 
-- target path: `../../` from current working directory
-- project name: basename of target path
+- target path: `../../` from `scripts/` directory
+- project name: basename of resolved target path
 - models: `codex,claude,gemini`
 - Notion MCP templates: enabled
 
