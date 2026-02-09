@@ -15,7 +15,7 @@ Usage:
     [--force]
 
 Options:
-  --target            Target repository path (default: ../../ when run from scripts/ directory)
+  --target            Target repository path (default: parent directory of this bootstrap repository)
   --project-name      Human-readable project name (default: basename of resolved target path)
   --issue-prefix      Issue prefix used in commit examples (default: Lt)
   --models            Comma-separated model list (default: codex,claude,gemini)
@@ -24,8 +24,10 @@ Options:
   -h, --help          Show this help
 
 Note:
-  Run from scripts/ for intended defaults:
+  Default target resolution uses this script's location (not the current working directory).
+  These are equivalent:
     cd scripts && bash bootstrap-workflow.sh
+    bash scripts/bootstrap-workflow.sh
 USAGE
 }
 
@@ -78,9 +80,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 if [[ -z "$TARGET" ]]; then
-  if ! TARGET="$(cd ../../ 2>/dev/null && pwd)"; then
-    echo "Error: failed to resolve default target path from ../../" >&2
+  if ! TARGET="$(cd "$SCRIPT_DIR/../.." 2>/dev/null && pwd)"; then
+    echo "Error: failed to resolve default target path from $SCRIPT_DIR/../.." >&2
     exit 1
   fi
 fi
@@ -154,7 +158,6 @@ if [[ ${#MODELS[@]} -eq 0 ]]; then
   exit 1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_ROOT="$SCRIPT_DIR/../bootstrap/templates"
 
 if [[ ! -d "$TEMPLATE_ROOT" ]]; then
